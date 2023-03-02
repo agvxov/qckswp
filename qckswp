@@ -7,20 +7,21 @@ readonly BOLD="\33[1m"
 readonly RED="\33[31m"
 readonly GREEN="\33[32m"
 readonly YELLOW="\33[33m"
+readonly BLUE="\33[34m"
 
 SCRIPT_NAME=$(basename $0)
 
 function usage(){
-	echo -e "${BOLD}${SCRIPT_NAME} [verb]${NORMAL}"
-	echo -e "	new [name] [bak] [load]    : add quick swapible files"
-	echo -e "	update [name] [bak] [load] : overwrite entry"
-	echo -e "	delete [name]              : remove entry"
-	echo -e "	bak [name]                 : copy [name]'s [load] file over the its [bak] file"
-	echo -e "	load [name]                : copy [name]'s [bak] file over the its [load] file"
-	echo -e "	list                       : list already added targets"
-	echo -e "	clean                      : rm [load]"
+	echo -e "${BOLD}${SCRIPT_NAME} <verb>${NORMAL}"
+	echo -e "	${GREEN}new <name> <bak> <load>    : add quick swapible files${NORMAL}"
+	echo -e "	${GREEN}update <name> <bak> <load> : overwrite entry${NORMAL}"
+	echo -e "	${GREEN}delete <name>              : remove entry${NORMAL}"
+	echo -e "	${GREEN}bak <name>                 : copy <name>'s <load> file over the its <bak> file${NORMAL}"
+	echo -e "	${GREEN}load <name>                : copy <name>'s <bak> file over the its <load> file${NORMAL}"
+	echo -e "	${GREEN}list                       : list already added targets${NORMAL}"
+	echo -e "	${GREEN}clean                      : rm <load>${NORMAL}"
 	echo -e "${YELLOW}${SCRIPT_NAME} is an utility for quickly swapping 2 predefined files either way.${NORMAL}"
-	echo -e "${YELLOW}For this a structures of \"name;[bak];[load]\" are used. These are saved/read from the file marked by \${QCKSWP_SAVES}.${NORMAL}"
+	echo -e "${YELLOW}For this a structures of \"name;<bak>;<load>\" are used. These are saved/read from the file marked by ${BLUE}\${QCKSWP_SAVES}${YELLOW}.${NORMAL}"
 	echo -e "${YELLOW}Paths with semi colons in their names are not supported.${NORMAL}"
 }
 
