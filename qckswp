@@ -1,0 +1,102 @@
+#!/bin/bash
+
+enable -n echo
+
+readonly NORMAL="\33[0m"
+readonly BOLD="\33[1m"
+readonly RED="\33[31m"
+readonly GREEN="\33[32m"
+readonly YELLOW="\33[33m"
+
+SCRIPT_NAME=$(basename $0)
+
+function usage(){
+	echo -e "${BOLD}${SCRIPT_NAME} [verb]${NORMAL}"
+	echo -e "	new [name] [bak] [load]    : add quick swapible files"
+	echo -e "	update [name] [bak] [load] : overwrite entry"
+	echo -e "	delete [name]              : remove entry"
+	echo -e "	bak [name]                 : copy [name]'s [load] file over the its [bak] file"
+	echo -e "	load [name]                : copy [name]'s [bak] file over the its [load] file"
+	echo -e "	list                       : list already added targets"
+	echo -e "	clean                      : rm [load]"
+	echo -e "${YELLOW}${SCRIPT_NAME} is an utility for quickly swapping 2 predefined files either way.${NORMAL}"
+	echo -e "${YELLOW}For this a structures of \"name;[bak];[load]\" are used. These are saved/read from the file marked by \${QCKSWP_SAVES}.${NORMAL}"
+	echo -e "${YELLOW}Paths with semi colons in their names are not supported.${NORMAL}"
+}
+
+OPTSTR="h"
+while getopts "${OPTSTR}" O; do
+        case $O in
+                h) usage && exit ;;
+        esac
+done
+
+! [ -f "$QCKSWP_SAVES" ] && echo -e "${RED}\${QCKSWP_SAVES} does not mark an existing file. Create it or change the variable!${NORMAL}" && exit 1
+
+function argc_check(){
+	(( $1 != $2 )) && echo -e "${RED}Syntax error.${NORMAL}" && exit 1
+}
+function entry_exists_check(){
+	! egrep "^${1};.*" "${QCKSWP_SAVES}" &> /dev/null && echo -e "${RED}Entry does not exits.${NORMAL}" && exit 1
+}
+
+function f(){
+	case $1 in
+		"b")
+			N=2
+			;;
+		"l")
+			N=3
+			;;
+	esac
+	echo "$(egrep "^${2};.*" "${QCKSWP_SAVES}" | cut -d ';' -f "$N")"
+}
+
+case $1 in
+	"new")
+		argc_check $# 4
+		egrep "^${2};.*" "${QCKSWP_SAVES}" &> /dev/null && echo -e "${RED}Entry already exits.${NORMAL}" && exit 1
+		echo "${2};${3};${4}" >> "${QCKSWP_SAVES}"
+		exit 0
+		;;
+	"update")
+		argc_check $# 4
+		entry_exists_check "$2"
+		sed -i "/^${2};.*/s/${2};${3};${4}" "${QCKSWP_SAVES}"
+		exit 0
+		;;
+	"delete")
+		argc_check $# 2
+		entry_exists_check "$2"
+		sed -i "/^${2};.*/d" "${QCKSWP_SAVES}"
+		exit 0
+		;;
+	"list")
+		argc_check $# 1
+		! tbt -i "${QCKSWP_SAVES}" && ! bat "${QCKSWP_SAVES}" && cat "${QCKSWP_SAVES}"
+		exit 0
+		;;
+	"bak")
+		argc_check $# 2
+		entry_exists_check "$2"
+		cp -r -v "$(f l "$2")" "$(f b "$2")" && echo -e "${GREEN}Successfull copy.${NORMAL}"
+		exit 0
+		;;
+	"load")
+		argc_check $# 2
+		entry_exists_check "$2"
+		cp -r -v "$(f b "$2")" "$(f l "$2")" && echo -e "${GREEN}Successfull copy.${NORMAL}"
+		exit 0
+		;;
+	"clean")
+		argc_check $# 2
+		entry_exists_check "$2"
+		rm -r $(f l "$2") &&  echo -e "${RED}Deletion complete.${RED}"
+		exit 0
+		;;
+	*)
+		echo -e "${RED}Syntax error.${NORMAL}"
+		exit 1
+		;;	
+esac
+
